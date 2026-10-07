@@ -1,3 +1,4 @@
+import { screenshotMimeType } from '../core/screenshot.js';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { EcpClient, Key } from '@danecodes/roku-ecp';
@@ -244,12 +245,13 @@ export function registerTools(server: McpServer, client: EcpClient): void {
 
   server.tool(
     'roku_screenshot',
-    'Take a screenshot of the Roku device screen. Returns a PNG image and optionally saves to disk.',
+    'Take a screenshot of the Roku device screen. Returns a PNG or JPEG image and optionally saves to disk.',
     {
-      save_path: z.string().optional().describe('File path to save the PNG to. If omitted, only returns the image inline.'),
+      save_path: z.string().optional().describe('File path to save the original image to (no format conversion). If omitted, only returns the image inline.'),
     },
     async ({ save_path }) => {
       const buf = await client.takeScreenshot();
+      const mimeType = screenshotMimeType(buf);
       if (save_path) {
         const fs = await import('fs');
         const path = await import('path');
@@ -258,7 +260,7 @@ export function registerTools(server: McpServer, client: EcpClient): void {
         fs.writeFileSync(resolved, buf);
       }
       const content: Array<{ type: 'image'; data: string; mimeType: string } | { type: 'text'; text: string }> = [
-        { type: 'image' as const, data: buf.toString('base64'), mimeType: 'image/png' },
+        { type: 'image' as const, data: buf.toString('base64'), mimeType },
       ];
       if (save_path) content.push({ type: 'text' as const, text: `Screenshot saved to ${save_path}` });
       return { content };
