@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import { screenshotMimeType } from '../core/screenshot.js';
+
 import { Command } from 'commander';
 import { EcpClient, Key, parseUiXml, findElements, findFocused } from '@danecodes/roku-ecp';
 import { formatTree } from '@danecodes/roku-ecp';
@@ -117,16 +119,18 @@ ui.command('screen')
   });
 
 ui.command('screenshot')
-  .description('Take a screenshot and save as PNG')
-  .option('-o, --output <path>', 'Output file path', 'roku_screenshot.png')
+  .description('Take a screenshot and save in its original PNG or JPEG format')
+  .option('-o, --output <path>', 'Output file path (default extension matches image format)')
   .option('--password <password>', 'Dev mode password', 'rokudev')
   .action(async (opts, cmd) => {
     const deviceIp = cmd.parent!.parent!.opts().device;
     const client = new EcpClient(deviceIp, { devPassword: opts.password });
     const buf = await client.takeScreenshot();
+    const extension = screenshotMimeType(buf) === 'image/png' ? 'png' : 'jpg';
+    const output = opts.output ?? `roku_screenshot.${extension}`;
     const fs = await import('fs');
-    fs.writeFileSync(opts.output, buf);
-    console.log(`Screenshot saved to ${opts.output} (${buf.length} bytes)`);
+    fs.writeFileSync(output, buf);
+    console.log(`Screenshot saved to ${output} (${buf.length} bytes)`);
   });
 
 /* ------------------------------------------------------------------ */
