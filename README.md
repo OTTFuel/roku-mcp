@@ -165,6 +165,8 @@ Your agent now has these tools:
 | `roku_cert_preflight` | Run Roku cert failure checklist (back nav, Home exit, relaunch, error scan) |
 | `roku_chanperf_sample` | Sample CPU usage via chanperf for a configurable duration — high watermark + pass/fail |
 
+Screenshot images retain the device’s original PNG or JPEG format. MCP image blocks advertise the detected MIME type. An explicit `save_path` or CLI output path is used as supplied; it does not convert the image.
+
 ### As a CLI
 
 ```bash
@@ -183,7 +185,7 @@ npx roku-mcp ui screen
 npx roku-mcp ui source
 
 # Take a screenshot
-npx roku-mcp ui screenshot -o screen.png
+npx roku-mcp ui screenshot # default filename matches PNG/JPEG format
 
 # Send key presses
 npx roku-mcp press Select
